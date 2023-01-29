@@ -112,10 +112,11 @@ class HTTPClient(object):
 
         # receive response
         response = self.recvall(self.socket)
-        code = self.get_code(response)
-        body = self.get_body(response)
+        
         # print the response
         print(response)
+        code = self.get_code(response)
+        body = self.get_body(response)
 
         # close connection
         self.close()
