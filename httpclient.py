@@ -41,13 +41,13 @@ class HTTPClient(object):
         return None
 
     def get_code(self, data):
-        return None
+        return int(data.split()[1])
 
     def get_headers(self,data):
-        return None
+        return data.split("\r\n\r\n")[0]
 
     def get_body(self, data):
-        return None
+        return data.split("\r\n\r\n")[1]
     
     def sendall(self, data):
         self.socket.sendall(data.encode('utf-8'))
@@ -66,14 +66,59 @@ class HTTPClient(object):
             else:
                 done = not part
         return buffer.decode('utf-8')
+    
+    def parse_url(self, url):
+        parsed_url = urllib.parse.urlparse(url)
+        host = parsed_url.hostname
+        port = parsed_url.port
+        path = parsed_url.path
+        scheme = parsed_url.scheme
+        query = parsed_url.query
+
+        if (path == ""):
+            path = "/"
+        if (port == None):
+            if (scheme == "http"):
+                port = 80
+            elif (scheme == "https"):
+                port = 443
+
+        if (query != ""):
+            path = path + "?" + query
+
+        return host, port, path, query
 
     def GET(self, url, args=None):
-        code = 500
-        body = ""
+        # code = 500
+        # body = ""
 
         # parse url
-        parsed_url = urllib.parse.urlparse(url) 
-        print(parsed_url)
+        host, port, path, query = self.parse_url(url)
+
+        # connect to host
+        try:
+            self.connect(host, port)
+        except:
+            print("Connection failed")
+            return HTTPResponse(404, "")
+        
+        # send request
+        request = "GET " + path + " HTTP/1.1\r\n"
+        request += "Host: " + host + "\r\n"
+        request += "Accept: */*\r\n"
+        request += "Connection: close\r\n\r\n"
+
+        self.sendall(request)
+
+        # receive response
+        response = self.recvall(self.socket)
+        code = self.get_code(response)
+        body = self.get_body(response)
+        # print the response
+        print(response)
+
+        # close connection
+        self.close()
 
         return HTTPResponse(code, body)
 
