@@ -70,6 +70,11 @@ class HTTPClient(object):
     def GET(self, url, args=None):
         code = 500
         body = ""
+
+        # parse url
+        parsed_url = urllib.parse.urlparse(url) 
+        print(parsed_url)
+
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
