@@ -124,8 +124,35 @@ class HTTPClient(object):
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
-        code = 500
-        body = ""
+        # code = 500
+        # body = ""
+
+        # parse url
+        host, port, path, query = self.parse_url(url)
+
+        # connect to host
+        try:
+            self.connect(host, port)
+        except:
+            print("Connection failed")
+            return HTTPResponse(404, "")
+        
+        # send request
+        request = "POST " + path + " HTTP/1.1\r\n"
+        request += "Host: " + host + "\r\n"
+        request += "Accept: */*\r\n"
+        request += "Content-Type: application/x-www-form-urlencoded\r\n"
+        request += "Content-Length: " + str(len(query)) + "\r\n"
+        request += "Connection: close\r\n\r\n"
+
+        response = self.recvall(self.socket)
+        print(response)
+        code = self.get_code(response)
+        body = self.get_body(response)
+
+        # close connection
+        self.close()
+
         return HTTPResponse(code, body)
 
     def command(self, url, command="GET", args=None):
