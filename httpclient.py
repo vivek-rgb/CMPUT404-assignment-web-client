@@ -73,7 +73,7 @@ class HTTPClient(object):
         port = parsed_url.port
         path = parsed_url.path
         scheme = parsed_url.scheme
-        
+        query = parsed_url.query
 
         if (path == ""):
             path = "/"
@@ -82,6 +82,9 @@ class HTTPClient(object):
                 port = 80
             elif (scheme == "https"):
                 port = 443
+
+        if (query != ""):
+            path += "?" + query
 
         return host, port, path
 
@@ -148,10 +151,6 @@ class HTTPClient(object):
         # attach body
         if (args != None):
             request += urllib.parse.urlencode(args)
-
-        print("_" * 80)
-        print(request)
-        print("_" * 80)
 
         self.sendall(request)
         
