@@ -73,7 +73,7 @@ class HTTPClient(object):
         port = parsed_url.port
         path = parsed_url.path
         scheme = parsed_url.scheme
-        query = parsed_url.query
+        
 
         if (path == ""):
             path = "/"
@@ -83,17 +83,14 @@ class HTTPClient(object):
             elif (scheme == "https"):
                 port = 443
 
-        if (query != ""):
-            path = path + "?" + query
-
-        return host, port, path, query
+        return host, port, path
 
     def GET(self, url, args=None):
         # code = 500
         # body = ""
 
         # parse url
-        host, port, path, query = self.parse_url(url)
+        host, port, path = self.parse_url(url)
 
         # connect to host
         try:
@@ -128,7 +125,7 @@ class HTTPClient(object):
         # body = ""
 
         # parse url
-        host, port, path, query = self.parse_url(url)
+        host, port, path = self.parse_url(url)
 
         # connect to host
         try:
@@ -142,9 +139,22 @@ class HTTPClient(object):
         request += "Host: " + host + "\r\n"
         request += "Accept: */*\r\n"
         request += "Content-Type: application/x-www-form-urlencoded\r\n"
-        request += "Content-Length: " + str(len(query)) + "\r\n"
+        if (args != None):
+            request += "Content-Length: " + str(len(urllib.parse.urlencode(args))) + "\r\n"
+        else:
+            request += "Content-Length: 0\r\n"
         request += "Connection: close\r\n\r\n"
 
+        # attach body
+        if (args != None):
+            request += urllib.parse.urlencode(args)
+
+        print("_" * 80)
+        print(request)
+        print("_" * 80)
+
+        self.sendall(request)
+        
         response = self.recvall(self.socket)
         print(response)
         code = self.get_code(response)
